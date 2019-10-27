@@ -14,11 +14,13 @@ using namespace std;
 
 int main() 
 {
+	int qid = msgget(ftok(".",'u'), 0);
 
 	// declare my message buffer
 	struct buf {
 		long mtype; // required
-		char greeting[50]; // mesg content
+		int randomInt; //random int that meets criteria
+		bool keepGoing; //flag to indicate whether to keep exhanging info
 	};
 
 	buf msg;
@@ -46,15 +48,26 @@ int main()
 
 		if (validReading == false)
 		{
-			//Terminate
+			msg.keepGoing = false;
+			msg.mtype = 117; 	// set message type mtype = 117
+			msgsnd(qid, (struct msgbuf *)&msg, size, 0); // sending
 		}
 
 		else
 		{
-			//Send data to hub
+			msg.randomInt = randomValue;
+			msg.keepGoing = true;
+			cout << getpid() << ": sends int" << endl;
+			msg.mtype = 117; 	// set message type mtype = 117
+			msgsnd(qid, (struct msgbuf *)&msg, size, 0); // sending
+
+			msgrcv(qid, (struct msgbuf *)&msg, size, 314, 0); // reading
+			cout << getpid() << ": gets confirmation int" << endl;
+			cout << "confirmation int: " << msg.randomInt << endl;
 		}
 		
 	}
 
     exit(0);
+
 }

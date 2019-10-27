@@ -15,7 +15,7 @@ int main() {
 	// declare my message buffer
 	struct buf {
 		long mtype; // required
-		char greeting[50]; // mesg content
+		int randomInt; //random int that meets criteria
 	};
 
 	buf msg;
