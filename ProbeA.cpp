@@ -31,6 +31,7 @@ int main()
 	bool validReading = true;
 	int randomValue;
 	const int magic_seed = 997;
+	msg.keepGoing = true;
 
 	while (validReading == true)
 	{
@@ -56,14 +57,11 @@ int main()
 		else
 		{
 			msg.randomInt = randomValue;
-			msg.keepGoing = true;
 			cout << getpid() << ": sends int" << endl;
 			msg.mtype = 117; 	// set message type mtype = 117
 			msgsnd(qid, (struct msgbuf *)&msg, size, 0); // sending
-
 			msgrcv(qid, (struct msgbuf *)&msg, size, 314, 0); // reading
-			cout << getpid() << ": gets confirmation int" << endl;
-			cout << "confirmation int: " << msg.randomInt << endl;
+			cout << getpid() << ": Confirmation from Data Hub received." << endl;
 		}
 		
 	}

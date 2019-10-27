@@ -31,21 +31,22 @@ int main() {
 	while(msg.keepGoing == true)
 	{
 		msgrcv(qid, (struct msgbuf *)&msg, size, 117, 0);
+		messagesReceived++;
 		cout << getpid() << ": gets message" << endl;
 		cout << "message: " << msg.randomInt << endl;
 
-		msg.randomInt = -2;
-
 		if (msg.keepGoing == true)
 		{
+			msg.randomInt = -2;
 			cout << getpid() << ": sends -2 as a confirmation receipt" << endl;
 			msg.mtype = 314; // only reading mesg with type mtype = 314
 			msgsnd(qid, (struct msgbuf *)&msg, size, 0);
 		}
 	}
 
-	cout << getpid() << ": gets last message" << endl;
+	cout << getpid() << ": has recieved its last message" << endl;
 	cout << "final message: " << msg.randomInt << endl;
+	cout << "Total Message count: " << messagesReceived << endl;
 	
 	msgctl (qid, IPC_RMID, NULL);
     
