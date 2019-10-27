@@ -1,0 +1,6 @@
+.vscode/
+Stuff/
+force_patch.h
+force_patch64.o
+kill_patch.h
+kill_patch64.o
