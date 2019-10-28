@@ -35,6 +35,8 @@ int main()
 	msg.keepGoing = true;
 	msg.randomInt = -2;
 	__pid_t pidProbeA = getpid();
+	int messegesSent = 0;
+	msg.pid = pidProbeA;
 
 	while (validReading == true && msg.randomInt == -2)
 	{
@@ -60,9 +62,9 @@ int main()
 		else
 		{
 			msg.randomInt = randomValue;
-			cout << pidProbeA << ": sends int" << endl;
 			msg.mtype = 117; 	// set message type mtype = 117
 			msgsnd(qid, (struct msgbuf *)&msg, size, 0); // sending
+			cout << pidProbeA << ": sent int to DataHub: " << msg.randomInt << "   Messages Sent: " << messegesSent++ << endl;
 			msgrcv(qid, (struct msgbuf *)&msg, size, 314, 0); // reading
 			cout << pidProbeA << ": Confirmation from Data Hub received." << endl;
 		}

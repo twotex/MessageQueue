@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <cstdlib>
-#include <force_patch.h>
+#include "force_patch.h"
 
 using namespace std;
 
@@ -35,33 +35,38 @@ int main() {
 	__pid_t pidProbeB;
 	__pid_t pidProbeC;
 	int counter;
+	bool keepReceivingFromA = true;
 	bool forcePatchUsed = false;
+	
 
-	while(msgA.keepGoing == true)
+	while(keepReceivingFromA || messagesReceived < 10000)
 	{
-		msgrcv(qid, (struct msgbuf *)&msgA, size, 117, 0);
-		messagesReceived++;
-		pidProbeA = msgA.pid;
-
-		if (msgA.keepGoing == true)
+		
+		if (keepReceivingFromA == true)
 		{
-			
-			cout << pidDataHub << ": gets message from " << msgA.pid << endl;
-			cout << "message: " << msgA.randomInt << endl;
-			msgA.randomInt = -2;
-			cout << pidDataHub << ": sends -2 as a confirmation receipt" << endl;
-			msgA.mtype = 314;
-			msgsnd(qid, (struct msgbuf *)&msgA, size, 0);
+			msgrcv(qid, (struct msgbuf *)&msgA, size, 117, 0);
+			messagesReceived++;
+			pidProbeA = msgA.pid;
+			keepReceivingFromA = msgA.keepGoing;
+			cout << "beep" << endl;
+
+			if (keepReceivingFromA == true)
+			{
+				cout << pidDataHub << "(DataHub): gets message from " << msgA.pid << "(Probe A) ----->  " << msgA.randomInt << endl;
+				msgA.randomInt = -2;
+				//cout << pidDataHub << "(DataHub): sends -2 as a confirmation receipt to Probe A" << endl;
+				msgA.mtype = 314;
+				msgsnd(qid, (struct msgbuf *)&msgA, size, 0);
+			}
 		}
 
 		if (messagesReceived < 10000)
 		{
-			msgrcv(qid, (struct msgbuf *)&msgB, size, 255, 0);
+			msgrcv(qid, (struct msgbuf *)&msgB, size, 600, 0);
 			messagesReceived++;
 			pidProbeB = msgB.pid;
 
-			cout << pidDataHub << ": gets message from " << msgB.pid << endl;
-			cout << "message: " << msgB.randomInt << endl;
+			cout << pidDataHub << "(DataHub): gets message from " << msgB.pid << "(Probe B) ----->  " << msgB.randomInt << endl;
 		}
 
 		else
@@ -71,12 +76,14 @@ int main() {
 				force_patch(pidProbeB);
 				forcePatchUsed = true;
 				counter = messagesReceived;
+				cout << "Force Patch Used on Probe B!" << endl;
 			}
 		}
+		cout << "Messages Received thus far: " << messagesReceived << endl;
 	}
 
-	cout << getpid() << ": has received its last message" << endl;
-	cout << "final message: " << msgA.randomInt << endl;
+	cout << getpid() << "(DataHub) has received its last message" << endl;
+	cout << "Final message: " << msgA.randomInt << endl;
 	cout << "Total Message count: " << messagesReceived << endl;
 	cout << endl;
 	cout << "Force patch used when messages received was equal to " << counter << endl;
