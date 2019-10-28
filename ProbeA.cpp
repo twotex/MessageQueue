@@ -21,6 +21,7 @@ int main()
 		long mtype; // required
 		int randomInt; //random int that meets criteria
 		bool keepGoing; //flag to indicate whether to keep exhanging info
+		__pid_t pid;
 	};
 
 	buf msg;
@@ -32,8 +33,10 @@ int main()
 	int randomValue;
 	const int magic_seed = 997;
 	msg.keepGoing = true;
+	msg.randomInt = -2;
+	__pid_t pidProbeA = getpid();
 
-	while (validReading == true)
+	while (validReading == true && msg.randomInt == -2)
 	{
 		randomValue = rand();
 
@@ -51,17 +54,17 @@ int main()
 		{
 			msg.keepGoing = false;
 			msg.mtype = 117; 	// set message type mtype = 117
-			msgsnd(qid, (struct msgbuf *)&msg, size, 0); // sending
+			msgsnd(qid, (struct msgbuf *)&msg, size, 0); // last message sent to data hub
 		}
 
 		else
 		{
 			msg.randomInt = randomValue;
-			cout << getpid() << ": sends int" << endl;
+			cout << pidProbeA << ": sends int" << endl;
 			msg.mtype = 117; 	// set message type mtype = 117
 			msgsnd(qid, (struct msgbuf *)&msg, size, 0); // sending
 			msgrcv(qid, (struct msgbuf *)&msg, size, 314, 0); // reading
-			cout << getpid() << ": Confirmation from Data Hub received." << endl;
+			cout << pidProbeA << ": Confirmation from Data Hub received." << endl;
 		}
 		
 	}

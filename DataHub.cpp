@@ -6,9 +6,10 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <cstdlib>
-//#include <force_patch.h>
+#include <force_patch.h>
 
 using namespace std;
+
 int main() {
 
 	int messagesReceived = 0;
@@ -21,32 +22,64 @@ int main() {
 		long mtype; // required
 		int randomInt; //random int that meets criteria
 		bool keepGoing; //flag to indicate whether to keep exhanging info
+		__pid_t pid;
 	};
 
-	buf msg;
-	int size = sizeof(msg)-sizeof(long);
+	buf msgA;
+	buf msgB;
+	buf msgC;
+	int size = sizeof(msgA)-sizeof(long);
+	msgA.keepGoing = true;
+	__pid_t pidDataHub = getpid();
+	__pid_t pidProbeA;
+	__pid_t pidProbeB;
+	__pid_t pidProbeC;
+	int counter;
+	bool forcePatchUsed = false;
 
-	msg.keepGoing = true;
-
-	while(msg.keepGoing == true)
+	while(msgA.keepGoing == true)
 	{
-		msgrcv(qid, (struct msgbuf *)&msg, size, 117, 0);
+		msgrcv(qid, (struct msgbuf *)&msgA, size, 117, 0);
 		messagesReceived++;
-		cout << getpid() << ": gets message" << endl;
-		cout << "message: " << msg.randomInt << endl;
+		pidProbeA = msgA.pid;
 
-		if (msg.keepGoing == true)
+		if (msgA.keepGoing == true)
 		{
-			msg.randomInt = -2;
-			cout << getpid() << ": sends -2 as a confirmation receipt" << endl;
-			msg.mtype = 314; // only reading mesg with type mtype = 314
-			msgsnd(qid, (struct msgbuf *)&msg, size, 0);
+			
+			cout << pidDataHub << ": gets message from " << msgA.pid << endl;
+			cout << "message: " << msgA.randomInt << endl;
+			msgA.randomInt = -2;
+			cout << pidDataHub << ": sends -2 as a confirmation receipt" << endl;
+			msgA.mtype = 314;
+			msgsnd(qid, (struct msgbuf *)&msgA, size, 0);
+		}
+
+		if (messagesReceived < 10000)
+		{
+			msgrcv(qid, (struct msgbuf *)&msgB, size, 255, 0);
+			messagesReceived++;
+			pidProbeB = msgB.pid;
+
+			cout << pidDataHub << ": gets message from " << msgB.pid << endl;
+			cout << "message: " << msgB.randomInt << endl;
+		}
+
+		else
+		{
+			if (forcePatchUsed == false)
+			{
+				force_patch(pidProbeB);
+				forcePatchUsed = true;
+				counter = messagesReceived;
+			}
 		}
 	}
 
-	cout << getpid() << ": has recieved its last message" << endl;
-	cout << "final message: " << msg.randomInt << endl;
+	cout << getpid() << ": has received its last message" << endl;
+	cout << "final message: " << msgA.randomInt << endl;
 	cout << "Total Message count: " << messagesReceived << endl;
+	cout << endl;
+	cout << "Force patch used when messages received was equal to " << counter << endl;
 	
 	msgctl (qid, IPC_RMID, NULL);
     

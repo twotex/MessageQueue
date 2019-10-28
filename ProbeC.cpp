@@ -16,6 +16,8 @@ int main() {
 	struct buf {
 		long mtype; // required
 		int randomInt; //random int that meets criteria
+		bool keepGoing; //flag to indicate whether to keep exhanging info
+		__pid_t pid;
 	};
 
 	buf msg;
