@@ -9,6 +9,9 @@
 #include <time.h>
 #include <stdlib.h>
 
+#include <thread>
+#include <chrono>
+
 using namespace std;
 
 int main() {
@@ -28,7 +31,6 @@ int main() {
 
 	srand(time(0));
 
-	bool validReading = true;
 	int randomValue;
 	const int magic_seed = 257;
 	msg.keepGoing = true;
@@ -48,7 +50,8 @@ int main() {
 		msg.randomInt = randomValue;
 		msg.mtype = 600;
 		msgsnd(qid, (struct msgbuf *)&msg, size, 0); // sending
-		cout << pidProbeB << ": sent int to DataHub: " << msg.randomInt << "   Messages Sent: " << messegesSent++ << endl;
+		cout << pidProbeB << "(Probe B) : sent int to DataHub: " << msg.randomInt << "   Messages Sent: " << messegesSent++ << endl;
+		this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 	
     exit(0);

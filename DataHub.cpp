@@ -37,9 +37,9 @@ int main() {
 	int counter;
 	bool keepReceivingFromA = true;
 	bool forcePatchUsed = false;
-	
+	bool terminatedProbeC = false;
 
-	while(keepReceivingFromA || messagesReceived < 10000)
+	while(keepReceivingFromA || messagesReceived < 10000 || terminatedProbeC == false)
 	{
 		
 		if (keepReceivingFromA == true)
@@ -48,16 +48,20 @@ int main() {
 			messagesReceived++;
 			pidProbeA = msgA.pid;
 			keepReceivingFromA = msgA.keepGoing;
-			cout << "beep" << endl;
 
 			if (keepReceivingFromA == true)
 			{
 				cout << pidDataHub << "(DataHub): gets message from " << msgA.pid << "(Probe A) ----->  " << msgA.randomInt << endl;
 				msgA.randomInt = -2;
-				//cout << pidDataHub << "(DataHub): sends -2 as a confirmation receipt to Probe A" << endl;
 				msgA.mtype = 314;
 				msgsnd(qid, (struct msgbuf *)&msgA, size, 0);
 			}
+
+			else
+			{
+				cout << pidDataHub << "(DataHub): gets final message from " << msgA.pid << "(Probe A) ----->  " << msgA.randomInt << endl;
+			}
+			
 		}
 
 		if (messagesReceived < 10000)
@@ -79,17 +83,33 @@ int main() {
 				cout << "Force Patch Used on Probe B!" << endl;
 			}
 		}
+
+		if (terminatedProbeC != true)
+		{
+			msgrcv(qid, (struct msgbuf *)&msgC, size, 900, 0);
+			messagesReceived++;
+			pidProbeC = msgC.pid;
+
+			if (msgC.randomInt != -5000)
+			{
+				cout << pidDataHub << "(DataHub): gets message from " << msgC.pid << "(Probe C) ----->  " << msgC.randomInt << endl;
+			}
+
+			else
+			{
+				cout << "Probe C was just terminated!" << endl;
+				terminatedProbeC = true;
+			}
+		}
+
 		cout << "Messages Received thus far: " << messagesReceived << endl;
 	}
 
-	cout << getpid() << "(DataHub) has received its last message" << endl;
-	cout << "Final message: " << msgA.randomInt << endl;
-	cout << "Total Message count: " << messagesReceived << endl;
 	cout << endl;
-	cout << "Force patch used when messages received was equal to " << counter << endl;
+	cout << getpid() << "(DataHub) has received its last message from the queue" << endl;
 	
 	msgctl (qid, IPC_RMID, NULL);
-    
+    cout << "Queue has now been deallocated. " << endl;
 
     exit(0);
 

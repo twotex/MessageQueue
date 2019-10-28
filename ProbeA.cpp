@@ -11,7 +11,6 @@
 
 using namespace std;
 
-
 int main() 
 {
 	int qid = msgget(ftok(".",'u'), 0);
@@ -52,19 +51,21 @@ int main()
 			}
 		}
 
+		msg.randomInt = randomValue;
+
 		if (validReading == false)
 		{
 			msg.keepGoing = false;
 			msg.mtype = 117; 	// set message type mtype = 117
 			msgsnd(qid, (struct msgbuf *)&msg, size, 0); // last message sent to data hub
+			cout << pidProbeA << "(Probe A) : sent its final int to DataHub: " << msg.randomInt << "   Messages Sent: " << messegesSent++ << endl;
 		}
 
 		else
 		{
-			msg.randomInt = randomValue;
 			msg.mtype = 117; 	// set message type mtype = 117
 			msgsnd(qid, (struct msgbuf *)&msg, size, 0); // sending
-			cout << pidProbeA << ": sent int to DataHub: " << msg.randomInt << "   Messages Sent: " << messegesSent++ << endl;
+			cout << pidProbeA << "(Probe A) : sent int to DataHub: " << msg.randomInt << "   Messages Sent: " << messegesSent++ << endl;
 			msgrcv(qid, (struct msgbuf *)&msg, size, 314, 0); // reading
 			cout << pidProbeA << ": Confirmation from Data Hub received." << endl;
 		}
@@ -72,5 +73,4 @@ int main()
 	}
 
     exit(0);
-
 }
